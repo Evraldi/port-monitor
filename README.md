@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Port Monitor
 
-## Getting Started
+Desktop app untuk memantau port yang sedang aktif, dibangun dengan **Next.js 16 + Tauri 2** (Windows). Menampilkan daftar port TCP/UDP lengkap dengan proses pemiliknya, plus fitur pencarian, sorting, dan kill process.
 
-First, run the development server:
+## Fitur
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Menampilkan port aktif (TCP/UDP) dari `netstat -ano`
+- Resolusi nama proses, path executable, dan working directory (via `sysinfo`)
+- Pencarian (port, PID, proses, path) & sorting per kolom
+- Kill process langsung dari tabel
+- Sistem tray — tombol close menyembunyikan window, app tetap berjalan di tray
+
+## Struktur
+
+```
+src/app/        UI Next.js (frontend)
+src-tauri/      Rust backend + Tauri commands
+  src/lib.rs    Commands: get_active_ports, kill_process, tray setup
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Requirement
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js 20+
+- Rust (stable)
+- Tauri CLI 2 (`npm i -g @tauri-apps/cli` atau via cargo)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Menjalankan (Development)
 
-## Learn More
+```bash
+npm install
+npm run tauri dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Ini menjalankan `next dev` + window Tauri.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run tauri build
+```
 
-## Deploy on Vercel
+Hasil installer/executable ada di `src-tauri/target/release/bundle/`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+> Catatan: backend command `get_active_ports` memanggil `netstat -ano` dan hanya berjalan di lingkungan Tauri (bukan browser biasa). Frontend di-export statis (`output: "export"`) dan di-bundle ke dalam app.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tauri Commands
+
+| Command          | Deskripsi                          |
+| ---------------- | ---------------------------------- |
+| `get_active_ports` | Mengembalikan daftar port aktif  |
+| `kill_process`   | Membunuh proses berdasarkan PID    |
