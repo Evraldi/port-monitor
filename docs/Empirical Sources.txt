@@ -1,0 +1,35 @@
+Berikut adalah daftar referensi dan link sumber data empiris yang mendukung riset mengenai latensi WMI, keunggulan API tingkat rendah (Win32/ETW), dan desain observabilitas modern untuk
+ SysPulse:
+1. Dokumentasi Resmi Microsoft (Dasar Performa)
+
+    WMI Performance Considerations: Menjelaskan mengapa kueri WMI bisa lambat dan membebani sistem (kueri WQL).
+
+        Microsoft Learn - WMI Performance Counter Provider
+
+    About Event Tracing (ETW): Menjelaskan mengapa ETW adalah mekanisme pelacakan tercepat di Windows dengan overhead minimal.
+
+        Microsoft Learn - About Event Tracing
+
+    Direct API vs WMI (IP Helper): Dokumentasi fungsi GetExtendedTcpTable yang jauh lebih cepat daripada kueri Win32_NetworkConnection.
+
+        Microsoft Learn - GetExtendedTcpTable function
+
+2. Studi Kasus Industri & Benchmarking
+
+    Datadog Engineering Blog: Pembahasan mendalam tentang mengapa mereka menulis ulang agen Windows mereka untuk menghindari WMI guna meningkatkan performa.
+
+        Datadog Blog - Monitoring Windows Performance Metrics
+
+    Performance Comparison (WMI vs. Registry vs. API): Diskusi teknis mengenai perbandingan kecepatan akses metrik di Windows.
+
+        StackOverflow - Performance of WMI vs Performance Counters (Berisi diskusi benchmark praktis dari pengembang).
+
+3. Referensi Teknis & Buku (Deep Dive)
+
+    Windows Internals (Pavel Yosifovich): Referensi utama dunia untuk memahami arsitektur sistem Windows. Buku ini menjelaskan secara detail biaya transisi konteks (context switch) pada WMI.
+
+        Windows Internals, Part 1 & 2
+
+    KrabsETW (By Microsoft): Repositori ini menjelaskan tantangan dalam mengonsumsi ETW dan perbandingannya dengan metode logging tradisional.
+
+        GitHub - Microsoft/krabsetw
