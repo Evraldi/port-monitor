@@ -1,0 +1,20 @@
+{
+  "reviewBy": "2026-12-31",
+  "note": "Advisory high/critical yang diterima karena app ini static export Windows-only (tanpa Next server, Image Optimization API, Server Actions, atau `use cache`). Advisory baru di luar daftar ini menggagalkan CI. Tinjau ulang sebelum reviewBy.",
+  "accepted": {
+    "https://github.com/advisories/GHSA-2v37-7h3g-55p8": "nanoid dipakai saat build oleh Next; tidak ada generator dengan size=0 yang dikontrol user di static export.",
+    "https://github.com/advisories/GHSA-p293-qw3h-jr36": "Tidak ada server Next yang diekspos; out/ berisi HTML statis saja.",
+    "https://github.com/advisories/GHSA-2xp9-vwfh-vxw4": "images.unoptimized=true dan tidak ada endpoint Image Optimization di bundle.",
+    "https://github.com/advisories/GHSA-vcvr-r3jv-pc5j": "Tidak ada next/og ImageResponse di source atau bundle.",
+    "https://github.com/advisories/GHSA-cjq9-62q9-8jv4": "Tidak ada Image Optimization endpoint yang bisa menerima request eksternal.",
+    "https://github.com/advisories/GHSA-2464-fhr4-w9xw": "Tidak ada Image Optimization endpoint (SVG/AVIF tidak diproses di runtime).",
+    "https://github.com/advisories/GHSA-p3m5-59mp-jv5r": "Tidak ada Server Actions; Tauri command dipanggil lewat IPC lokal.",
+    "https://github.com/advisories/GHSA-673q-mjm6-r5xr": "Tidak ada fungsi `use cache` yang menerima input dari user.",
+    "https://github.com/advisories/GHSA-6g55-p6wh-862q": "PostCSS hanya berjalan saat build dengan CSS lokal, bukan input user.",
+    "https://github.com/advisories/GHSA-r28c-9q8g-f849": "Tidak ada sourceMappingURL dari CSS yang dikontrol pihak luar saat build.",
+    "https://github.com/advisories/GHSA-f88m-g3jw-g9cj": "sharp/libvips hanya dipakai saat build; tidak ada gambar user yang diproses di runtime.",
+    "https://github.com/advisories/GHSA-rgj7-g3m4-5g8c": "sharp/libheif hanya dipakai saat build; tidak ada gambar user yang diproses di runtime.",
+    "https://github.com/advisories/GHSA-wq5f-xc86-pv6w": "sharp/librsvg hanya dipakai saat build; tidak ada SVG user yang diproses di runtime.",
+    "https://github.com/advisories/GHSA-68fv-2mgg-jv7q": "source-map-js hanya dipakai saat build; tidak ada source map dari luar yang diproses di runtime."
+  }
+}

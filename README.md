@@ -4,7 +4,7 @@ Desktop app untuk memantau port yang sedang aktif, dibangun dengan **Next.js 16 
 
 ## Fitur
 
-- Menampilkan port aktif (TCP/UDP) dari `netstat -ano`
+- Auto-refresh tiap 3 detik (bisa dijeda) dari `netstat -ano`
 - Resolusi nama proses, path executable, dan working directory (via `sysinfo`)
 - Pencarian (port, PID, proses, path) & sorting per kolom
 - Kill process langsung dari tabel
@@ -20,9 +20,9 @@ src-tauri/      Rust backend + Tauri commands
 
 ## Requirement
 
-- Node.js 20+
-- Rust (stable)
-- Tauri CLI 2 (`npm i -g @tauri-apps/cli` atau via cargo)
+- Node.js **>= 20.9** (disarankan 24 LTS)
+- Rust (stable, >= 1.77.2 sesuai `rust-version` crate)
+- Tauri CLI tersedia lewat devDependency (`npm run tauri`), tidak perlu install global
 
 ## Menjalankan (Development)
 

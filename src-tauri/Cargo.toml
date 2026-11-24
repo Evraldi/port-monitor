@@ -1,10 +1,9 @@
 [package]
 name = "app"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+description = "Windows desktop monitor for active TCP/UDP ports, process owners, and guarded process termination"
+authors = ["Evraldi"]
+license = "UNLICENSED"
 edition = "2021"
 rust-version = "1.77.2"
 
@@ -24,3 +23,4 @@ log = "0.4"
 sysinfo = "0.32"
 tauri = { version = "2.11.3", features = ["tray-icon"] }
 tauri-plugin-log = "2"
+tauri-plugin-single-instance = "2"
