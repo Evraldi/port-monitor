@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import {
+  memo,
+  useCallback,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   getServerSnapshot,
   getSnapshot,
@@ -32,7 +38,7 @@ const COLUMNS: { key: SortKey; label: string }[] = [
 ];
 
 // State `netstat -ano` Windows. UDP tidak punya state, jadi dibiarkan kosong
-// ditampilkan sebagai "—" dan tidak perlu masuk map.
+// dan ditampilkan sebagai "—".
 const STATUS_COLORS: Record<string, string> = {
   LISTENING: "text-emerald-400",
   ESTABLISHED: "text-sky-400",
@@ -51,12 +57,96 @@ const STATUS_COLORS: Record<string, string> = {
 
 const REFRESH_INTERVAL_MS = 3_000;
 
+interface ControlsProps {
+  autoRefresh: boolean;
+  search: string;
+  showPaths: boolean;
+  onAutoRefresh: (value: boolean) => void;
+  onSearch: (value: string) => void;
+  onShowPaths: (value: boolean) => void;
+  onRefresh: () => void;
+}
+
+// Kontrol sengaja tidak menerima `refreshing`: perubahan data/loading tidak
+// boleh meng-render ulang input search dan toggle. Indikator refresh ada di
+// komponen terpisah di bawah.
+const Controls = memo(function Controls({
+  autoRefresh,
+  search,
+  showPaths,
+  onAutoRefresh,
+  onSearch,
+  onShowPaths,
+  onRefresh,
+}: ControlsProps) {
+  return (
+    <>
+      <label className="flex items-center gap-1.5 text-xs text-zinc-400">
+        <input
+          type="checkbox"
+          checked={autoRefresh}
+          onChange={(event) => onAutoRefresh(event.target.checked)}
+          className="h-3.5 w-3.5 accent-emerald-500"
+        />
+        Auto-refresh
+      </label>
+      <label className="flex items-center gap-1.5 text-xs text-zinc-400">
+        <input
+          type="checkbox"
+          checked={showPaths}
+          onChange={(event) => onShowPaths(event.target.checked)}
+          className="h-3.5 w-3.5 accent-emerald-500"
+        />
+        Show paths
+      </label>
+      <input
+        type="search"
+        aria-label="Cari port, PID, proses, atau path"
+        placeholder="Search port, PID, process, path…"
+        value={search}
+        onChange={(e) => onSearch(e.target.value)}
+        className="w-56 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-500 outline-none focus:border-zinc-500"
+      />
+      <button
+        onClick={onRefresh}
+        title="Refresh sekarang"
+        className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
+      >
+        Refresh
+      </button>
+    </>
+  );
+});
+
+function RefreshIndicator({ refreshing }: { refreshing: boolean }) {
+  return (
+    <span className="w-4 text-xs text-zinc-500" aria-hidden="true">
+      {refreshing ? "↻" : ""}
+    </span>
+  );
+}
+
 export default function Home() {
   const data = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("port");
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
   const [showPaths, setShowPaths] = useState(false);
+
+  // Callback stabil supaya memo(Controls) benar-benar melewati render
+  // ketika hanya data tabel yang berubah.
+  const handleSearch = useCallback((value: string) => setSearch(value), []);
+  const handleShowPaths = useCallback(
+    (value: boolean) => setShowPaths(value),
+    []
+  );
+  const handleAutoRefresh = useCallback(
+    (value: boolean) => setAutoRefresh(value),
+    []
+  );
+  const handleRefresh = useCallback(() => {
+    void refresh();
+  }, []);
 
   const toggleSort = (key: SortKey) => {
     if (key === sortKey) {
@@ -113,39 +203,16 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <input
-              type="checkbox"
-              checked={data.autoRefresh}
-              onChange={(event) => setAutoRefresh(event.target.checked)}
-              className="h-3.5 w-3.5 accent-emerald-500"
-            />
-            Auto-refresh
-          </label>
-          <label className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <input
-              type="checkbox"
-              checked={showPaths}
-              onChange={(event) => setShowPaths(event.target.checked)}
-              className="h-3.5 w-3.5 accent-emerald-500"
-            />
-            Show paths
-          </label>
-          <input
-            type="search"
-            aria-label="Cari port, PID, proses, atau path"
-            placeholder="Search port, PID, process, path…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-56 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 placeholder-zinc-500 outline-none focus:border-zinc-500"
+          <Controls
+            autoRefresh={data.autoRefresh}
+            search={search}
+            showPaths={showPaths}
+            onAutoRefresh={handleAutoRefresh}
+            onSearch={handleSearch}
+            onShowPaths={handleShowPaths}
+            onRefresh={handleRefresh}
           />
-          <button
-            onClick={() => void refresh()}
-            disabled={data.refreshing}
-            className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800 disabled:opacity-50"
-          >
-            {data.refreshing ? "Refreshing…" : "Refresh"}
-          </button>
+          <RefreshIndicator refreshing={data.refreshing} />
         </div>
       </header>
 

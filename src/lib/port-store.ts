@@ -39,7 +39,9 @@ let snapshot: PortSnapshot = {
 };
 
 const listeners = new Set<() => void>();
-let inFlight = false;
+// Simpan promise-nya, bukan cuma boolean: klik Refresh saat request masih
+// jalan ikut menunggu request itu, bukannya diabaikan.
+let inFlightPromise: Promise<void> | null = null;
 let timer: ReturnType<typeof setInterval> | undefined;
 
 function emit(patch: Partial<PortSnapshot>): void {
@@ -63,9 +65,7 @@ function scheduleTimer(): void {
   }
 }
 
-export async function refresh(clearKillMessage = true): Promise<void> {
-  if (inFlight) return;
-  inFlight = true;
+async function fetchPorts(clearKillMessage: boolean): Promise<void> {
   emit({
     refreshing: true,
     ...(clearKillMessage ? { killMessage: null } : {}),
@@ -82,14 +82,36 @@ export async function refresh(clearKillMessage = true): Promise<void> {
         );
       }),
     ]);
-    emit({ ports: data, error: null, lastUpdated: new Date() });
+    // Satu emit di akhir: data + status selesai sekaligus. Mengurangi
+    // render ulang yang membuat kontrol UI terasa berkedip.
+    emit({
+      ports: data,
+      error: null,
+      lastUpdated: new Date(),
+      refreshing: false,
+      loading: false,
+    });
   } catch (error) {
-    emit({ error: String(error) });
+    emit({
+      error: String(error),
+      refreshing: false,
+      loading: false,
+    });
   } finally {
     if (timeoutId !== undefined) clearTimeout(timeoutId);
-    emit({ refreshing: false, loading: false });
-    inFlight = false;
   }
+}
+
+export function refresh(clearKillMessage = true): Promise<void> {
+  if (inFlightPromise) {
+    if (clearKillMessage) emit({ killMessage: null });
+    return inFlightPromise;
+  }
+  const promise = fetchPorts(clearKillMessage).finally(() => {
+    inFlightPromise = null;
+  });
+  inFlightPromise = promise;
+  return promise;
 }
 
 export function subscribe(listener: () => void): () => void {

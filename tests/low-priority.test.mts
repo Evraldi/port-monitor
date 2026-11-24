@@ -45,7 +45,8 @@ test("killMessage dibersihkan saat refresh, tapi dipertahankan setelah kill", ()
   assert.match(store, /clearKillMessage = true/);
   assert.match(store, /killMessage: null/);
   assert.match(store, /await refresh\(false\)/);
-  assert.match(page, /onClick=\{\(\) => void refresh\(\)\}/);
+  assert.match(page, /onRefresh=\{handleRefresh\}/);
+  assert.match(page, /void refresh\(\);/);
 });
 
 test("komponen tidak pakai effect/setTimeout untuk fetch awal", () => {
@@ -53,6 +54,26 @@ test("komponen tidak pakai effect/setTimeout untuk fetch awal", () => {
   assert.doesNotMatch(page, /useEffect|setTimeout/);
   assert.match(store, /setInterval/);
   assert.match(store, /clearInterval/);
+});
+
+test("refresh menggabungkan emit akhir jadi satu", () => {
+  assert.match(
+    store,
+    /lastUpdated: new Date\(\),\s*refreshing: false,\s*loading: false/
+  );
+  assert.match(store, /if \(inFlightPromise\)/);
+  assert.match(store, /return inFlightPromise/);
+  assert.doesNotMatch(store, /let inFlight = false/);
+});
+
+test("kontrol memoized tidak ikut render saat data berubah", () => {
+  assert.match(page, /const Controls = memo\(/);
+  assert.match(page, /<RefreshIndicator refreshing=\{data\.refreshing\} \/>/);
+  const propsSource = page.slice(
+    page.indexOf("interface ControlsProps"),
+    page.indexOf("const Controls = memo")
+  );
+  assert.doesNotMatch(propsSource, /^\s*refreshing[?]?\s*:/m);
 });
 
 test("startup tidak panic pakai expect", () => {
